@@ -1,0 +1,676 @@
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>XNS Chat</title>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #151515;
+            color: white;
+        }
+
+        .app {
+            height: 100vh;
+            display: flex;
+        }
+
+        /* ==========================
+           BARRA LATERAL
+        ========================== */
+
+        .sidebar {
+            width: 270px;
+            background: #1c1c1c;
+            border-right: 1px solid #333;
+
+            padding: 20px;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            margin: 0 0 20px;
+        }
+
+        .usuario {
+            background: #292929;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .link {
+            display: block;
+
+            padding: 11px;
+
+            margin-bottom: 5px;
+
+            color: white;
+            text-decoration: none;
+
+            border-radius: 7px;
+        }
+
+        .link:hover {
+            background: #303030;
+        }
+
+        .titulo {
+            color: #888;
+
+            font-size: 12px;
+
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .grupos {
+            overflow-y: auto;
+            max-height: 300px;
+        }
+
+        .grupo {
+            display: block;
+
+            padding: 10px;
+
+            margin-bottom: 5px;
+
+            color: #ddd;
+            text-decoration: none;
+
+            border-radius: 7px;
+        }
+
+        .grupo:hover {
+            background: #303030;
+        }
+
+        /* ==========================
+           CRIAR GRUPO
+        ========================== */
+
+        .criar-grupo {
+            margin-top: 15px;
+        }
+
+        .criar-grupo input {
+            width: 100%;
+
+            padding: 11px;
+
+            margin-bottom: 7px;
+
+            border: none;
+            border-radius: 7px;
+
+            background: #303030;
+            color: white;
+
+            outline: none;
+        }
+
+        .criar-grupo button {
+            width: 100%;
+
+            padding: 11px;
+
+            border: none;
+            border-radius: 7px;
+
+            background: #3ba55d;
+            color: white;
+
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+        .criar-grupo button:hover {
+            background: #2d8748;
+        }
+
+        .logout {
+            margin-top: auto;
+
+            color: #ff7777;
+            text-decoration: none;
+
+            padding: 10px 0;
+        }
+
+        /* ==========================
+           PARTE PRINCIPAL
+        ========================== */
+
+        .principal {
+            flex: 1;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cabecalho {
+            padding: 20px;
+
+            border-bottom: 1px solid #333;
+        }
+
+        .cabecalho h2 {
+            margin: 0 0 5px;
+        }
+
+        .cabecalho p {
+            margin: 0;
+
+            color: #888;
+        }
+
+        /* ==========================
+           MENSAGENS
+        ========================== */
+
+        .mensagens {
+            flex: 1;
+
+            overflow-y: auto;
+
+            padding: 20px;
+        }
+
+        .mensagem {
+            margin-bottom: 15px;
+
+            word-break: break-word;
+        }
+
+        .nome {
+            font-weight: bold;
+            color: #7289da;
+        }
+
+        .texto {
+            margin-left: 8px;
+            color: #eee;
+        }
+
+        /* ==========================
+           ENVIO
+        ========================== */
+
+        .enviar {
+            display: flex;
+
+            gap: 10px;
+
+            padding: 15px;
+
+            background: #1c1c1c;
+        }
+
+        .enviar input {
+            flex: 1;
+
+            padding: 14px;
+
+            border: none;
+            border-radius: 8px;
+
+            background: #303030;
+
+            color: white;
+
+            outline: none;
+
+            font-size: 15px;
+        }
+
+        .enviar button {
+            padding: 0 25px;
+
+            border: none;
+            border-radius: 8px;
+
+            background: #5865f2;
+
+            color: white;
+
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+        .enviar button:hover {
+            background: #4752c4;
+        }
+
+        /* ==========================
+           CELULAR
+        ========================== */
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+                width: 210px;
+                padding: 12px;
+            }
+
+            .enviar button {
+                padding: 0 15px;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="app">
+
+    <!-- ==================================
+         BARRA LATERAL
+    =================================== -->
+
+    <aside class="sidebar">
+
+        <h1 class="logo">
+            XNS
+        </h1>
+
+
+        <div class="usuario">
+
+            👤 {{ usuario }}
+
+        </div>
+
+
+        <!-- CHAT GLOBAL -->
+
+        <a
+            href="{{ url_for('chat') }}"
+            class="link"
+        >
+            🌎 Chat Global
+        </a>
+
+
+        <!-- GRUPOS -->
+
+        <div class="titulo">
+            GRUPOS
+        </div>
+
+
+        <div class="grupos">
+
+            {% for g in grupos %}
+
+                <a
+                    href="{{ url_for('entrar_grupo', grupo_id=g['id']) }}"
+                    class="grupo"
+                >
+                    🔒 {{ g['nome'] }}
+                </a>
+
+            {% endfor %}
+
+
+            {% if not grupos %}
+
+                <p style="color:#777;">
+                    Nenhum grupo criado.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- CRIAR GRUPO -->
+
+        <form
+            method="POST"
+            action="{{ url_for('criar_grupo') }}"
+            class="criar-grupo"
+        >
+
+            <input
+                type="text"
+                name="nome"
+                placeholder="Nome do grupo"
+                maxlength="50"
+                required
+            >
+
+            <input
+                type="password"
+                name="senha"
+                placeholder="Senha do grupo"
+                minlength="4"
+                required
+            >
+
+            <button type="submit">
+                + Criar grupo
+            </button>
+
+        </form>
+
+
+        <!-- SAIR -->
+
+        <a
+            href="{{ url_for('logout') }}"
+            class="logout"
+        >
+            Sair
+        </a>
+
+    </aside>
+
+
+    <!-- ==================================
+         CHAT
+    =================================== -->
+
+    <main class="principal">
+
+        <div class="cabecalho">
+
+            {% if grupo %}
+
+                <h2>
+                    🔒 {{ grupo["nome"] }}
+                </h2>
+
+                <p>
+                    Você entrou neste grupo.
+                </p>
+
+            {% else %}
+
+                <h2>
+                    🌎 Chat Global
+                </h2>
+
+                <p>
+                    Converse com todos.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- MENSAGENS -->
+
+        <div
+            id="mensagens"
+            class="mensagens"
+        >
+
+            {% for msg in mensagens %}
+
+                <div class="mensagem">
+
+                    <span class="nome">
+                        {{ msg["usuario"] }}:
+                    </span>
+
+                    <span class="texto">
+                        {{ msg["mensagem"] }}
+                    </span>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- ENVIO -->
+
+        <form
+            id="formMensagem"
+            class="enviar"
+        >
+
+            <input
+                id="mensagem"
+                type="text"
+                maxlength="500"
+                placeholder="Digite uma mensagem..."
+                autocomplete="off"
+                required
+            >
+
+            <button type="submit">
+                Enviar
+            </button>
+
+        </form>
+
+    </main>
+
+</div>
+
+
+<script>
+
+    // ==================================
+    // SOCKET.IO
+    // ==================================
+
+    const socket = io();
+
+
+    const form =
+        document.getElementById("formMensagem");
+
+    const input =
+        document.getElementById("mensagem");
+
+    const mensagens =
+        document.getElementById("mensagens");
+
+
+    // ==================================
+    // GRUPO ATUAL
+    // ==================================
+
+    {% if grupo %}
+
+        const grupoId = {{ grupo["id"] }};
+
+        socket.emit(
+            "entrar_grupo",
+            {
+                grupo_id: grupoId
+            }
+        );
+
+    {% else %}
+
+        const grupoId = null;
+
+    {% endif %}
+
+
+    // ==================================
+    // ENVIAR MENSAGEM
+    // ==================================
+
+    form.addEventListener(
+        "submit",
+        function(event) {
+
+            event.preventDefault();
+
+            const texto =
+                input.value.trim();
+
+            if (!texto) {
+                return;
+            }
+
+
+            {% if grupo %}
+
+                socket.emit(
+                    "mensagem_grupo",
+                    {
+                        grupo_id: grupoId,
+                        mensagem: texto
+                    }
+                );
+
+            {% else %}
+
+                socket.emit(
+                    "mensagem_global",
+                    {
+                        mensagem: texto
+                    }
+                );
+
+            {% endif %}
+
+
+            input.value = "";
+
+            input.focus();
+
+        }
+    );
+
+
+    // ==================================
+    // MENSAGEM GLOBAL
+    // ==================================
+
+    socket.on(
+        "nova_mensagem",
+        function(data) {
+
+            {% if not grupo %}
+
+                adicionarMensagem(
+                    data.usuario,
+                    data.mensagem
+                );
+
+            {% endif %}
+
+        }
+    );
+
+
+    // ==================================
+    // MENSAGEM DO GRUPO
+    // ==================================
+
+    socket.on(
+        "nova_mensagem_grupo",
+        function(data) {
+
+            {% if grupo %}
+
+                if (
+                    Number(data.grupo_id)
+                    ===
+                    Number(grupoId)
+                ) {
+
+                    adicionarMensagem(
+                        data.usuario,
+                        data.mensagem
+                    );
+
+                }
+
+            {% endif %}
+
+        }
+    );
+
+
+    // ==================================
+    // MOSTRAR MENSAGEM
+    // ==================================
+
+    function adicionarMensagem(
+        usuario,
+        mensagem
+    ) {
+
+        const div =
+            document.createElement("div");
+
+        div.className =
+            "mensagem";
+
+
+        const nome =
+            document.createElement("span");
+
+        nome.className =
+            "nome";
+
+        nome.textContent =
+            usuario + ":";
+
+
+        const texto =
+            document.createElement("span");
+
+        texto.className =
+            "texto";
+
+        texto.textContent =
+            mensagem;
+
+
+        div.appendChild(nome);
+
+        div.appendChild(texto);
+
+        mensagens.appendChild(div);
+
+
+        mensagens.scrollTop =
+            mensagens.scrollHeight;
+
+    }
+
+
+    mensagens.scrollTop =
+        mensagens.scrollHeight;
+
+</script>
+
+</body>
+
+</html>
+```
