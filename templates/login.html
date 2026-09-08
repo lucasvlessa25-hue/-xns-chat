@@ -1,0 +1,58 @@
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>XNS Chat - Login</title>
+</head>
+
+<body>
+
+    <h1>XNS CHAT</h1>
+
+    <h2>Entrar</h2>
+
+    {% if erro %}
+        <p>{{ erro }}</p>
+    {% endif %}
+
+    <form method="POST">
+
+        <input
+            type="text"
+            name="username"
+            placeholder="Usuário"
+            required
+        >
+
+        <br><br>
+
+        <input
+            type="password"
+            name="senha"
+            placeholder="Senha"
+            required
+        >
+
+        <br><br>
+
+        <button type="submit">
+            Entrar
+        </button>
+
+    </form>
+
+    <p>
+        Ainda não tem conta?
+        <a href="{{ url_for('cadastro') }}">
+            Criar conta
+        </a>
+    </p>
+
+</body>
+
+</html>
+```
